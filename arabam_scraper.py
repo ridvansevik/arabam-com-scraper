@@ -3,9 +3,10 @@ import csv
 import time
 import random
 from selenium import webdriver
+import argparse
 
 class ArabamScraper:
-    def __init__(self, base_url, output_file_name, max_pages=2):
+    def __init__(self, base_url, output_file_name, max_pages):
         """Initializes the scraper with necessary parameters.
         
         Args:
@@ -148,5 +149,15 @@ class ArabamScraper:
         self.driver.quit()
 
 if __name__ == "__main__":
-    scraper = ArabamScraper("https://www.arabam.com/ikinci-el/otomobil", "TurkishArabamComCarsInformations.csv")
+    parser = argparse.ArgumentParser(description="Arabam.com Scraper")
+    parser.add_argument("--max-pages", type=int, default=2, help="Maximum number of pages to scrape")
+    
+    args = parser.parse_args()
+    
+    scraper = ArabamScraper(
+        "https://www.arabam.com/ikinci-el/otomobil",
+        "TurkishArabamComCarsInformations.csv",
+        max_pages=args.max_pages
+    )
+    
     scraper.scrape()
