@@ -1,6 +1,6 @@
 # ArabamScraper
 
-ArabamScraper is a web scraping tool designed to collect second-hand car listings from Arabam.com. The script extracts essential vehicle details such as brand, model, year, price, mileage, listing date, and location, saving the data into a structured CSV file. This project is currently intended for generating a small dataset, with future updates planned for improvements and expanded functionality.
+ArabamScraper is a web scraping tool designed to collect second-hand vehicle listings from Arabam.com. The script extracts essential vehicle details such as brand, model, year, price, mileage, listing date, and location, saving the data into a structured CSV file. This project is currently intended for generating a small dataset, with future updates planned for improvements and expanded functionality.
 
 ## Features
 - Uses Selenium and BeautifulSoup for efficient web scraping.
@@ -28,9 +28,9 @@ ArabamScraper is a web scraping tool designed to collect second-hand car listing
 ## Usage
 Run the script with:
 ```sh
-python arabam_scraper.py
+python arabam_scraper.py --category otomobil --min_price 50000 --max_price 200000 --max-pages 5 --output car_listings.csv
 ```
-The scraped data will be saved as `TurkishArabamComCarsInformations.csv` in the project directory.
+The scraped data will be saved as a CSV file in the project directory.
 
 ## Future Updates
 - Enhancements for larger dataset collection.
