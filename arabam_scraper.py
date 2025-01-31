@@ -6,17 +6,23 @@ from selenium import webdriver
 import argparse
 
 class ArabamScraper:
-    def __init__(self, base_url, output_file_name, max_pages):
+    def __init__(self, category, min_price, max_price, output_file_name, max_pages):
         """Initializes the scraper with necessary parameters.
-        
+
         Args:
-            base_url (str): The base URL of the website to scrape.
-            output_file_name (str): The name of the output CSV file.
-            max_pages (int): The maximum number of pages to scrape.
+            category (str): The category to scrape (e.g., 'otomobil', 'motosiklet').
+            min_price (int): Minimum price filter.
+            max_price (int): Maximum price filter.
+            output_file_name (str): Name of the output CSV file.
+            max_pages (int): Maximum number of pages to scrape.
         """
-        self.base_url = base_url
+
+        self.category = category
+        self.min_price = min_price
+        self.max_price = max_price
         self.output_file_name = output_file_name
         self.max_pages = max_pages
+        self.base_url = self._build_url()
         self.driver = self._initialize_driver()
     
     def _initialize_driver(self):
@@ -42,6 +48,11 @@ class ArabamScraper:
         except Exception as e:
             print(f"[ERROR] Failed to initialize WebDriver: {e}")
             return None
+    
+    def _build_url(self, page=1):
+        url = f"https://www.arabam.com/ikinci-el/{self.category}?currency=TL&minPrice={self.min_price}&maxPrice={self.max_price}&take=50&page={page}"
+        print(f"You are taking {self.category}'s between {self.min_price} and {self.max_price} TL.")
+        return url
     
     def _get_page_soup(self, url):
         """Fetches the page content and returns a BeautifulSoup object.
@@ -110,7 +121,9 @@ class ArabamScraper:
                 model_full = row.find('td', class_='listing-modelname pr').find('h3').text.strip()
                 brand, model = model_full.split(' ', 1)  # Split brand and model.
                 mileage = row.find_all('td')[4].find('div', class_='fade-out-content-wrapper').find('a').text.strip().replace(".", "")
-                price = row.find_all('td')[6].find('div', class_='fade-out-content-wrapper').find('a').find('span', class_='db no-wrap listing-price').text.strip()
+                price_tag = row.find_all('td')[6].find('div', class_='fade-out-content-wrapper').find('a')
+                price = price_tag.find('span', class_='db no-wrap listing-price').text.strip() if price_tag else 'N/A'
+
                 listing_date = row.find('td', class_='listing-text tac').find('div', class_='fade-out-content-wrapper').find('a').text.strip()
                 location = row.find_all('td')[8].find('div').find('div', class_='fade-out-content-wrapper').find('a').find_all('span')[0].text.strip()
                 
@@ -133,7 +146,7 @@ class ArabamScraper:
         column_names = []
         
         for page_num in range(1, total_pages + 1):
-            url = f"{self.base_url}?take=50&page={page_num}"
+            url = self._build_url(page_num)
             print(f"Processing: {url}")
             page_content = self._get_page_soup(url)
             if not page_content:
@@ -151,13 +164,20 @@ class ArabamScraper:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Arabam.com Scraper")
     parser.add_argument("--max-pages", type=int, default=2, help="Maximum number of pages to scrape")
-    
+    parser.add_argument("--category", type=str, default="otomobil", help="Choose Category ('otomobil', 'motosiklet')")
+    parser.add_argument("--min_price", type=int, default=0, help="Min Price")
+    parser.add_argument("--max_price", type=int, default=100000000, help="Max Price")
+    parser.add_argument("--output", type=str, default="InformationsOutput.csv", help="Output CSV file name")
+
     args = parser.parse_args()
-    
+
     scraper = ArabamScraper(
-        "https://www.arabam.com/ikinci-el/otomobil",
-        "TurkishArabamComCarsInformations.csv",
-        max_pages=args.max_pages
-    )
+    category=args.category,
+    min_price=args.min_price,
+    max_price=args.max_price,
+    output_file_name=args.output,
+    max_pages=args.max_pages
+)
+
     
     scraper.scrape()
