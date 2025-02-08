@@ -35,7 +35,7 @@ jobs:
       # Step 5: Build the EXE file using PyInstaller
       - name: Build EXE File
         run: |
-          pyinstaller --onefile --windowed --add-binary "chromedriver.exe;." arabam_scraper.py
+          pyinstaller --onefile --console --add-binary "chromedriver.exe;." arabam_scraper.py
 
       # Step 6: Prepare the release directory
       - name: Prepare Release Directory
