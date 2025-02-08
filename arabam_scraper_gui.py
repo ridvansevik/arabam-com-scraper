@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk  # To use combobox for page selection
 from arabam_scraper import ArabamScraper  # ArabamScraper class
+import threading  # Import the threading module
 
 class ScraperGUI:
     def __init__(self, root):
@@ -56,22 +57,37 @@ class ScraperGUI:
         root.grid_columnconfigure(1, weight=1)
 
     def start_scraping(self):
-        category = self.category_entry.get()
-        min_price = int(self.min_price_entry.get())
-        max_price = int(self.max_price_entry.get())
-        output_file_name = self.output_entry.get() + ".csv"
-        max_pages = int(self.max_pages_combo.get())
+        try:
+            category = self.category_entry.get()
+            min_price = int(self.min_price_entry.get())
+            max_price = int(self.max_price_entry.get())
+            output_file_name = self.output_entry.get() + ".csv"
+            max_pages = int(self.max_pages_combo.get())
 
-        scraper = ArabamScraper(
-            category=category,
-            min_price=min_price,
-            max_price=max_price,
-            output_file_name=output_file_name,
-            max_pages=max_pages
-        )
-        
-        scraper.scrape()
-        messagebox.showinfo("Success", "Scraping finished successfully!")
+            # Run the scraper in a separate thread to keep the GUI responsive
+            scraper_thread = threading.Thread(target=self.run_scraper, args=(category, min_price, max_price, output_file_name, max_pages))
+            scraper_thread.start()
+
+        except Exception as e:
+            # Display an error message if any exception occurs
+            messagebox.showerror("Error", f"An error occurred: {str(e)}")
+
+    def run_scraper(self, category, min_price, max_price, output_file_name, max_pages):
+        try:
+            scraper = ArabamScraper(
+                category=category,
+                min_price=min_price,
+                max_price=max_price,
+                output_file_name=output_file_name,
+                max_pages=max_pages
+            )
+            
+            scraper.scrape()
+            messagebox.showinfo("Success", "Scraping finished successfully!")
+
+        except Exception as e:
+            # Display an error message if any exception occurs during scraping
+            messagebox.showerror("Error", f"An error occurred while scraping: {str(e)}")
 
 if __name__ == "__main__":
     root = tk.Tk()
