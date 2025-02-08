@@ -3,7 +3,7 @@ name: Build and Release EXE
 on:
   push:
     tags:
-      - "v*.*.*"
+      - "v*.*.*"  # Trigger release on tag push (version format: vX.X.X)
 
 jobs:
   build:
@@ -23,30 +23,30 @@ jobs:
       # Step 3: Install required Python packages
       - name: Install Python Dependencies
         run: |
-          pip install pyinstaller selenium beautifulsoup4
+          pip install pyinstaller selenium beautifulsoup4  # Install necessary dependencies
 
       # Step 4: Download ChromeDriver
       - name: Download ChromeDriver
         run: |
-          Invoke-WebRequest -Uri "https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_win32.zip" -OutFile "chromedriver.zip"
-          Expand-Archive chromedriver.zip -DestinationPath .
-          Move-Item -Path chromedriver.exe -Destination .\
+          Invoke-WebRequest -Uri "https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_win32.zip" -OutFile "chromedriver.zip"  # Download ChromeDriver
+          Expand-Archive chromedriver.zip -DestinationPath .  # Extract the downloaded archive
+          Move-Item -Path chromedriver.exe -Destination .\  # Move ChromeDriver to the correct location
 
       # Step 5: Build the EXE file using PyInstaller
       - name: Build EXE File
         run: |
-          pyinstaller --onefile --console --add-binary "chromedriver.exe;." arabam_scraper.py
+          pyinstaller --onefile --windowed --add-binary "chromedriver.exe;." arabam_scraper_gui.py  # Create an EXE file with PyInstaller
 
       # Step 6: Prepare the release directory
       - name: Prepare Release Directory
         run: |
-          mkdir release
-          move dist\arabam_scraper.exe release\arabam_scraper.exe
+          mkdir release  # Create release directory
+          move dist\arabam_scraper_gui.exe release\arabam_scraper_gui.exe  # Move the built EXE file to the release folder
 
       # Step 7: Upload the EXE file to GitHub Releases
       - name: Upload to GitHub Releases
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v1  # GitHub action to upload files to releases
         with:
-          files: release/arabam_scraper.exe  # Specify the file to upload
+          files: release/arabam_scraper_gui.exe  # Specify the EXE file to upload
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # No need to create a new token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically use the token to authenticate for GitHub API
