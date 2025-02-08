@@ -1,0 +1,52 @@
+name: Build and Release EXE
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    runs-on: windows-latest  # Use the latest Windows runner
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Python
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"  # Specify Python version
+
+      # Step 3: Install required Python packages
+      - name: Install Python Dependencies
+        run: |
+          pip install pyinstaller selenium beautifulsoup4
+
+      # Step 4: Download ChromeDriver
+      - name: Download ChromeDriver
+        run: |
+          Invoke-WebRequest -Uri "https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_win32.zip" -OutFile "chromedriver.zip"
+          Expand-Archive chromedriver.zip -DestinationPath .
+          Move-Item -Path chromedriver.exe -Destination .\
+
+      # Step 5: Build the EXE file using PyInstaller
+      - name: Build EXE File
+        run: |
+          pyinstaller --onefile --windowed --add-binary "chromedriver.exe;." arabam_scraper.py
+
+      # Step 6: Prepare the release directory
+      - name: Prepare Release Directory
+        run: |
+          mkdir release
+          move dist\arabam_scraper.exe release\arabam_scraper.exe
+
+      # Step 7: Upload the EXE file to GitHub Releases
+      - name: Upload to GitHub Releases
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/arabam_scraper.exe  # Specify the file to upload
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # No need to create a new token
