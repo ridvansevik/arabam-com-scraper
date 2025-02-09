@@ -3,6 +3,7 @@ from tkinter import messagebox
 from tkinter import ttk  # To use combobox for page selection
 from arabam_scraper import ArabamScraper  # ArabamScraper class
 import threading  # Import the threading module
+import os
 
 class ScraperGUI:
     def __init__(self, root):
@@ -64,13 +65,15 @@ class ScraperGUI:
             output_file_name = self.output_entry.get() + ".csv"
             max_pages = int(self.max_pages_combo.get())
 
+            self.start_button.config(state="disabled")
+
             # Run the scraper in a separate thread to keep the GUI responsive
             scraper_thread = threading.Thread(target=self.run_scraper, args=(category, min_price, max_price, output_file_name, max_pages))
             scraper_thread.start()
 
         except Exception as e:
-            # Display an error message if any exception occurs
             messagebox.showerror("Error", f"An error occurred: {str(e)}")
+            self.start_button.config(state="normal")
 
     def run_scraper(self, category, min_price, max_price, output_file_name, max_pages):
         try:
@@ -81,13 +84,17 @@ class ScraperGUI:
                 output_file_name=output_file_name,
                 max_pages=max_pages
             )
-            
+
             scraper.scrape()
-            messagebox.showinfo("Success", "Scraping finished successfully!")
+            file_path = os.path.abspath(output_file_name)
+            messagebox.showinfo("Success", f"Scraping finished successfully!\nFile saved to: {file_path}")
 
         except Exception as e:
-            # Display an error message if any exception occurs during scraping
             messagebox.showerror("Error", f"An error occurred while scraping: {str(e)}")
+
+        finally:
+            self.start_button.config(state="normal")
+
 
 if __name__ == "__main__":
     root = tk.Tk()
